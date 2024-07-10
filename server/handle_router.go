@@ -1,30 +1,42 @@
 package server
 
 import (
+	"errors"
+	"gohttp/utils"
 	"net/http"
+	"os"
 )
 
 func HandleRouter() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			SendHTTPErrorResponse(w, http.StatusMethodNotAllowed)
+	return func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			SendHTTPErrorResponse(res, http.StatusMethodNotAllowed)
 			return
 		}
 
-		if len(r.UserAgent()) == 0 {
-			SendHTTPErrorResponse(w, http.StatusForbidden)
+		if len(req.UserAgent()) == 0 {
+			SendHTTPErrorResponse(res, http.StatusForbidden)
 			return
 		}
 
-		Router(w, r)
+		Router(res, req)
 	}
 }
 
-func Router(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Path
+func Router(res http.ResponseWriter, req *http.Request) {
+	url := req.URL.Path
 
 	switch url {
 	case "/":
+		if err := utils.VerifyFileExistence("index.html"); err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				SendHTTPErrorResponse(res, http.StatusNotFound)
+				return
+			}
+			SendHTTPErrorResponse(res, http.StatusInternalServerError)
+			return
+		}
+		http.ServeFile(res, req, "./html/index.html")
 	default:
 	}
 }
