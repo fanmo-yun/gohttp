@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func HandleRouter() http.HandlerFunc {
+func HandleRouter(config *utils.Config) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			SendHTTPErrorResponse(res, http.StatusMethodNotAllowed)
