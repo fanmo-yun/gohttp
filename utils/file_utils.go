@@ -2,15 +2,19 @@ package utils
 
 import (
 	"os"
-	"path/filepath"
 )
 
-func VerifyFileExistence(path string) error {
-	fp := filepath.Join("html", path)
-	f, openErr := os.OpenFile(fp, os.O_RDWR, 0666)
+func VerifyPath(path string) (bool, error) {
+	f, openErr := os.OpenFile(path, os.O_RDONLY, 0444)
 	if openErr != nil {
-		return openErr
+		return false, openErr
 	}
 	defer f.Close()
-	return nil
+
+	fileInfo, statErr := f.Stat()
+	if statErr != nil {
+		return false, statErr
+	}
+
+	return fileInfo.IsDir(), nil
 }
