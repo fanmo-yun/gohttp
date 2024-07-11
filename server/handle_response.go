@@ -5,8 +5,9 @@ import (
 	"net/http"
 )
 
-func SendHTTPErrorResponse(w http.ResponseWriter, status int) {
+func SendHTTPErrorResponse(res http.ResponseWriter, status int) {
 	msg := "gohttp: " + http.StatusText(status)
-	w.WriteHeader(status)
-	io.WriteString(w, msg)
+	res.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	res.WriteHeader(status)
+	io.WriteString(res, msg)
 }
