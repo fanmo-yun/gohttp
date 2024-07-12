@@ -1,11 +1,10 @@
 package server
 
 import (
-	"errors"
+	"fmt"
 	"gohttp/utils"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 )
 
@@ -31,6 +30,7 @@ func Handle(res http.ResponseWriter, req *http.Request) *url.URL {
 
 func HandleRouter(config *utils.Config) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
+		fmt.Println(req)
 		urlPath := Handle(res, req)
 		if urlPath == nil {
 			return
@@ -45,6 +45,10 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 }
 
 func CustomRouter(res http.ResponseWriter, req *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig) bool {
+	if len(cus) == 0 {
+		return false
+	}
+
 	for _, custom := range cus {
 		if custom.Urlpath == URLPath {
 			fullPath := filepath.Join(staticDir, filepath.Clean(custom.Filepath))
@@ -64,23 +68,4 @@ func Router(res http.ResponseWriter, req *http.Request, URLPath string, h utils.
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
 		SendStaticFile(res, req, fullPath)
 	}
-}
-
-func SendStaticFile(res http.ResponseWriter, req *http.Request, filepath string) {
-	isDir, err := utils.VerifyPath(filepath)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			SendHTTPErrorResponse(res, http.StatusNotFound)
-		} else if os.IsPermission(err) {
-			SendHTTPErrorResponse(res, http.StatusForbidden)
-		} else {
-			SendHTTPErrorResponse(res, http.StatusInternalServerError)
-		}
-		return
-	} else if isDir {
-		SendHTTPErrorResponse(res, http.StatusNotFound)
-		return
-	}
-
-	http.ServeFile(res, req, filepath)
 }
