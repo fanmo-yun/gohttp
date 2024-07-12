@@ -4,21 +4,60 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Server ServerConfig `yaml:"server"`
-	Static HtmlConfig   `yaml:"html"`
+	Server ServerConfig   `yaml:"server,omitempty"`
+	Static HtmlConfig     `yaml:"html,omitempty"`
+	Custom []CustomConfig `yaml:"custom,omitempty"`
+	Proxy  []ProxyConfig  `yaml:"proxy,omitempty"`
 }
+
 type ServerConfig struct {
 	Host string `yaml:"host"`
 	Port string `yaml:"port"`
 }
+
 type HtmlConfig struct {
 	Dirpath string `yaml:"path"`
 	Index   string `yaml:"index"`
+}
+
+type CustomConfig struct {
+	Urlpath  string `yaml:"url"`
+	Filepath string `yaml:"file"`
+}
+
+type ProxyConfig struct {
+	Proxyname string `yaml:"name"`
+	Proxypath string `yaml:"proxy"`
+}
+
+func DefaultServer() *ServerConfig {
+	return &ServerConfig{
+		Host: "0.0.0.0",
+		Port: "80",
+	}
+}
+
+func DefaultHtml() *HtmlConfig {
+	return &HtmlConfig{
+		Dirpath: "html",
+		Index:   "index.html",
+	}
+}
+
+func CoverConfig(c *Config) {
+	if reflect.DeepEqual(c.Server, ServerConfig{}) {
+		c.Server = *DefaultServer()
+	}
+
+	if reflect.DeepEqual(c.Static, HtmlConfig{}) {
+		c.Static = *DefaultHtml()
+	}
 }
 
 func LoadConfig() *Config {
@@ -29,7 +68,8 @@ func LoadConfig() *Config {
 		log.Fatalln(readErr)
 	}
 	if unmarshalErr := yaml.Unmarshal(confData, &config); unmarshalErr != nil {
-		log.Fatalln(readErr)
+		log.Fatalln(unmarshalErr)
 	}
+	CoverConfig(&config)
 	return &config
 }
