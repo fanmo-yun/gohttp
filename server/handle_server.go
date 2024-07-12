@@ -9,6 +9,7 @@ import (
 
 func ServerRun() {
 	config := utils.LoadConfig()
+	fmt.Println(config)
 
 	address := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
 	gohttp := http.Server{
@@ -16,7 +17,7 @@ func ServerRun() {
 		Handler: HandleRouter(config),
 	}
 
-	log.Println("Listening on http://127.0.0.1:3000...")
+	log.Println("Listening on http://" + address)
 	err := gohttp.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

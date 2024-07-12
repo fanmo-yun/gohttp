@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"fmt"
 	"gohttp/utils"
 	"net/http"
 	"net/url"
@@ -10,37 +9,59 @@ import (
 	"path/filepath"
 )
 
-func HandleRouter(config *utils.Config) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
-			SendHTTPErrorResponse(res, http.StatusMethodNotAllowed)
-			return
-		}
-
-		if len(req.UserAgent()) == 0 {
-			SendHTTPErrorResponse(res, http.StatusForbidden)
-			return
-		}
-
-		Router(res, req)
+func Handle(res http.ResponseWriter, req *http.Request) *url.URL {
+	if req.Method != http.MethodGet {
+		SendHTTPErrorResponse(res, http.StatusMethodNotAllowed)
+		return nil
 	}
-}
 
-func Router(res http.ResponseWriter, req *http.Request) {
+	if len(req.UserAgent()) == 0 {
+		SendHTTPErrorResponse(res, http.StatusForbidden)
+		return nil
+	}
+
 	parsedURL, err := url.Parse(req.URL.Path)
 	if err != nil {
 		SendHTTPErrorResponse(res, http.StatusBadRequest)
-		return
+		return nil
 	}
 
-	path := parsedURL.Path
-	switch path {
+	return parsedURL
+}
+
+func HandleRouter(config *utils.Config) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		urlPath := Handle(res, req)
+		if urlPath == nil {
+			return
+		}
+
+		path := urlPath.Path
+		handled := CustomRouter(res, req, path, config.Static.Dirpath, config.Custom)
+		if !handled {
+			Router(res, req, path, config.Static)
+		}
+	}
+}
+
+func CustomRouter(res http.ResponseWriter, req *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig) bool {
+	for _, custom := range cus {
+		if custom.Urlpath == URLPath {
+			fullPath := filepath.Join(staticDir, filepath.Clean(custom.Filepath))
+			SendStaticFile(res, req, fullPath)
+			return true
+		}
+	}
+	return false
+}
+
+func Router(res http.ResponseWriter, req *http.Request, URLPath string, h utils.HtmlConfig) {
+	switch URLPath {
 	case "/":
-		fullPath := filepath.Join("html", "index.html")
+		fullPath := filepath.Join(h.Dirpath, h.Index)
 		SendStaticFile(res, req, fullPath)
 	default:
-		fullPath := filepath.Join("html", filepath.Clean(path))
-		fmt.Println(fullPath)
+		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
 		SendStaticFile(res, req, fullPath)
 	}
 }
