@@ -29,6 +29,8 @@ func Handle(res http.ResponseWriter, req *http.Request) *url.URL {
 
 func HandleRouter(config *utils.Config) http.HandlerFunc {
 	proxies := CreateProxies(config.Proxy)
+	backends := NewBackend(config.Backend)
+	loadBalancer := NewLoadBalancer(backends)
 
 	return func(res http.ResponseWriter, req *http.Request) {
 		urlPath := Handle(res, req)
@@ -40,6 +42,12 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 		if proxies != nil && FindAndServeProxy(res, req, path, proxies) {
 			return
 		}
+
+		if backends != nil {
+			loadBalancer.ServeHTTP(res, req)
+			return
+		}
+
 		if !CustomRouter(res, req, path, config.Static.Dirpath, config.Custom) {
 			Router(res, req, path, config.Static)
 		}

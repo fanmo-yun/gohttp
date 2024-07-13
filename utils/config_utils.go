@@ -10,10 +10,11 @@ import (
 )
 
 type Config struct {
-	Server ServerConfig   `yaml:"server,omitempty"`
-	Static HtmlConfig     `yaml:"html,omitempty"`
-	Custom []CustomConfig `yaml:"custom,omitempty"`
-	Proxy  []ProxyConfig  `yaml:"proxy,omitempty"`
+	Server  ServerConfig    `yaml:"server,omitempty"`
+	Static  HtmlConfig      `yaml:"html,omitempty"`
+	Custom  []CustomConfig  `yaml:"custom,omitempty"`
+	Proxy   []ProxyConfig   `yaml:"proxy,omitempty"`
+	Backend []BackendConfig `yaml:"backend,omitempty"`
 }
 
 type ServerConfig struct {
@@ -34,6 +35,10 @@ type CustomConfig struct {
 type ProxyConfig struct {
 	PathPrefix string `yaml:"prefix"`
 	TargetURL  string `yaml:"target"`
+}
+
+type BackendConfig struct {
+	BackendURL string `yaml:"url"`
 }
 
 func DefaultServer() *ServerConfig {
