@@ -32,8 +32,8 @@ type CustomConfig struct {
 }
 
 type ProxyConfig struct {
-	Proxyname string `yaml:"name"`
-	TargetURL string `yaml:"url"`
+	PathPrefix string `yaml:"prefix"`
+	TargetURL  string `yaml:"target"`
 }
 
 func DefaultServer() *ServerConfig {

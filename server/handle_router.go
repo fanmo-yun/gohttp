@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"gohttp/utils"
 	"net/http"
 	"net/url"
@@ -29,16 +28,19 @@ func Handle(res http.ResponseWriter, req *http.Request) *url.URL {
 }
 
 func HandleRouter(config *utils.Config) http.HandlerFunc {
+	proxies := CreateProxies(config.Proxy)
+
 	return func(res http.ResponseWriter, req *http.Request) {
-		fmt.Println(req)
 		urlPath := Handle(res, req)
 		if urlPath == nil {
 			return
 		}
-
 		path := urlPath.Path
-		handled := CustomRouter(res, req, path, config.Static.Dirpath, config.Custom)
-		if !handled {
+
+		if proxies != nil && FindAndServeProxy(res, req, path, proxies) {
+			return
+		}
+		if !CustomRouter(res, req, path, config.Static.Dirpath, config.Custom) {
 			Router(res, req, path, config.Static)
 		}
 	}
