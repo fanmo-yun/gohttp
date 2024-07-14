@@ -48,8 +48,12 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 			return
 		}
 
-		if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom) {
-			Router(response, request, path, config.Static)
+		if !config.Static.Try {
+			if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom) {
+				Router(response, request, path, config.Static)
+			}
+		} else {
+			TryRootRouter(response, request, path, config.Static)
 		}
 	}
 }
@@ -77,5 +81,16 @@ func Router(response http.ResponseWriter, request *http.Request, URLPath string,
 	default:
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
 		SendStaticFile(response, request, fullPath)
+	}
+}
+
+func TryRootRouter(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig) {
+	switch URLPath {
+	case "/":
+		fullPath := filepath.Join(h.Dirpath, h.Index)
+		SendTryRootFile(response, request, fullPath, h)
+	default:
+		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
+		SendTryRootFile(response, request, fullPath, h)
 	}
 }

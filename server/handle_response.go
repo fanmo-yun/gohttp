@@ -45,3 +45,24 @@ func SendStaticFile(response http.ResponseWriter, request *http.Request, path st
 
 	http.ServeFile(response, request, path)
 }
+
+func SendTryRootFile(response http.ResponseWriter, request *http.Request, path string, h utils.HtmlConfig) {
+	handleError := func(err error) {
+		if errors.Is(err, os.ErrNotExist) {
+			fullpath := filepath.Join(h.Dirpath, h.Index)
+			http.ServeFile(response, request, fullpath)
+		} else if os.IsPermission(err) {
+			SendHTTPErrorResponse(response, http.StatusForbidden)
+		} else {
+			SendHTTPErrorResponse(response, http.StatusInternalServerError)
+		}
+	}
+
+	_, err := utils.VerifyPath(path)
+	if err != nil {
+		handleError(err)
+		return
+	}
+
+	http.ServeFile(response, request, path)
+}

@@ -4,7 +4,7 @@ server:
 
 html:
   path: html
-  index: index.html
+  index: try index.html
 
 logger:
   out: file

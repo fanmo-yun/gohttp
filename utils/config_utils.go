@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,6 +27,7 @@ type ServerConfig struct {
 type HtmlConfig struct {
 	Dirpath string `yaml:"path"`
 	Index   string `yaml:"index"`
+	Try     bool
 }
 
 type LoggerConfig struct {
@@ -58,6 +60,7 @@ func DefaultHtml() *HtmlConfig {
 	return &HtmlConfig{
 		Dirpath: "html",
 		Index:   "index.html",
+		Try:     false,
 	}
 }
 
@@ -86,6 +89,16 @@ func CoverConfig(c *Config) {
 			c.Static.Dirpath = "html"
 		} else if c.Static.Index == "" {
 			c.Static.Index = "index.html"
+		} else {
+			s := strings.Split(c.Static.Index, " ")
+			if strings.ToLower(s[0]) == "try" {
+				c.Static.Try = true
+				if len(s) > 1 {
+					c.Static.Index = s[1]
+				} else {
+					panic("配置错误: 'Index' 字段格式错误，缺少文件名")
+				}
+			}
 		}
 	}
 
