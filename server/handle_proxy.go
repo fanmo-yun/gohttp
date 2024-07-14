@@ -67,9 +67,9 @@ func CreateProxies(reverseproxies []utils.ProxyConfig) map[string]*httputil.Reve
 	return proxies
 }
 
-func FindAndServeProxy(response http.ResponseWriter, request *http.Request, path string, proxies map[string]*httputil.ReverseProxy) bool {
+func FindAndServeProxy(response http.ResponseWriter, request *http.Request, URLPath string, proxies map[string]*httputil.ReverseProxy) bool {
 	for prefix, proxy := range proxies {
-		if len(path) >= len(prefix) && path[:len(prefix)] == prefix {
+		if len(URLPath) >= len(prefix) && URLPath[:len(prefix)] == prefix {
 			proxy.ServeHTTP(response, request)
 			return true
 		}

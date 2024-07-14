@@ -32,24 +32,24 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 	backends := NewBackend(config.Backend)
 	loadBalancer := NewLoadBalancer(backends)
 
-	return func(res http.ResponseWriter, req *http.Request) {
-		urlPath := Handle(res, req)
+	return func(response http.ResponseWriter, request *http.Request) {
+		urlPath := Handle(response, request)
 		if urlPath == nil {
 			return
 		}
 		path := urlPath.Path
 
-		if proxies != nil && FindAndServeProxy(res, req, path, proxies) {
+		if proxies != nil && FindAndServeProxy(response, request, path, proxies) {
 			return
 		}
 
 		if backends != nil {
-			loadBalancer.ServeHTTP(res, req)
+			loadBalancer.ServeHTTP(response, request)
 			return
 		}
 
-		if !CustomRouter(res, req, path, config.Static.Dirpath, config.Custom) {
-			Router(res, req, path, config.Static)
+		if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom) {
+			Router(response, request, path, config.Static)
 		}
 	}
 }
@@ -69,13 +69,13 @@ func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath s
 	return false
 }
 
-func Router(res http.ResponseWriter, req *http.Request, URLPath string, h utils.HtmlConfig) {
+func Router(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig) {
 	switch URLPath {
 	case "/":
 		fullPath := filepath.Join(h.Dirpath, h.Index)
-		SendStaticFile(res, req, fullPath)
+		SendStaticFile(response, request, fullPath)
 	default:
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
-		SendStaticFile(res, req, fullPath)
+		SendStaticFile(response, request, fullPath)
 	}
 }
