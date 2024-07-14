@@ -7,20 +7,20 @@ import (
 	"path/filepath"
 )
 
-func Handle(res http.ResponseWriter, req *http.Request) *url.URL {
-	if req.Method != http.MethodGet {
-		SendHTTPErrorResponse(res, http.StatusMethodNotAllowed)
+func Handle(response http.ResponseWriter, request *http.Request) *url.URL {
+	if request.Method != http.MethodGet {
+		SendHTTPErrorResponse(response, http.StatusMethodNotAllowed)
 		return nil
 	}
 
-	if len(req.UserAgent()) == 0 {
-		SendHTTPErrorResponse(res, http.StatusForbidden)
+	if len(request.UserAgent()) == 0 {
+		SendHTTPErrorResponse(response, http.StatusForbidden)
 		return nil
 	}
 
-	parsedURL, err := url.Parse(req.URL.Path)
+	parsedURL, err := url.Parse(request.URL.Path)
 	if err != nil {
-		SendHTTPErrorResponse(res, http.StatusBadRequest)
+		SendHTTPErrorResponse(response, http.StatusBadRequest)
 		return nil
 	}
 
@@ -54,7 +54,7 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 	}
 }
 
-func CustomRouter(res http.ResponseWriter, req *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig) bool {
+func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig) bool {
 	if len(cus) == 0 {
 		return false
 	}
@@ -62,7 +62,7 @@ func CustomRouter(res http.ResponseWriter, req *http.Request, URLPath string, st
 	for _, custom := range cus {
 		if custom.Urlpath == URLPath {
 			fullPath := filepath.Join(staticDir, filepath.Clean(custom.Filepath))
-			SendStaticFile(res, req, fullPath)
+			SendStaticFile(response, request, fullPath)
 			return true
 		}
 	}

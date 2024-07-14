@@ -27,6 +27,9 @@ type HtmlConfig struct {
 	Index   string `yaml:"index"`
 }
 
+type LoggerConfig struct {
+}
+
 type CustomConfig struct {
 	Urlpath  string `yaml:"url"`
 	Filepath string `yaml:"file"`

@@ -2,6 +2,7 @@ package server
 
 import (
 	"gohttp/utils"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -14,17 +15,28 @@ type LoadBalancer struct {
 }
 
 func NewLoadBalancer(backends []*httputil.ReverseProxy) *LoadBalancer {
-	return &LoadBalancer{Backends: backends}
+	return &LoadBalancer{Backends: backends, Current: 0}
 }
 
-func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (lb *LoadBalancer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	backend := lb.nextBackend()
-	backend.ServeHTTP(w, r)
+	if backend != nil {
+		backend.ServeHTTP(res, req)
+	} else {
+		http.Error(res, "Service unavailable", http.StatusServiceUnavailable)
+	}
 }
 
 func (lb *LoadBalancer) nextBackend() *httputil.ReverseProxy {
 	n := atomic.AddUint32(&lb.Current, 1)
-	return lb.Backends[(int(n)-1)%len(lb.Backends)]
+	index := (int(n) - 1) % len(lb.Backends)
+
+	if index < 0 || index >= len(lb.Backends) {
+		log.Println("Invalid backend index calculated:", index)
+		return nil
+	}
+
+	return lb.Backends[index]
 }
 
 func NewProxy(target string) (*httputil.ReverseProxy, error) {
@@ -55,10 +67,10 @@ func CreateProxies(reverseproxies []utils.ProxyConfig) map[string]*httputil.Reve
 	return proxies
 }
 
-func FindAndServeProxy(res http.ResponseWriter, req *http.Request, path string, proxies map[string]*httputil.ReverseProxy) bool {
+func FindAndServeProxy(response http.ResponseWriter, request *http.Request, path string, proxies map[string]*httputil.ReverseProxy) bool {
 	for prefix, proxy := range proxies {
 		if len(path) >= len(prefix) && path[:len(prefix)] == prefix {
-			proxy.ServeHTTP(res, req)
+			proxy.ServeHTTP(response, request)
 			return true
 		}
 	}
@@ -70,13 +82,17 @@ func NewBackend(backendUrl []utils.BackendConfig) []*httputil.ReverseProxy {
 		return nil
 	}
 
-	urls := make([]*httputil.ReverseProxy, 0)
+	urls := []*httputil.ReverseProxy{}
 	for _, url := range backendUrl {
 		backend, err := NewProxy(url.BackendURL)
 		if err != nil {
 			continue
 		}
 		urls = append(urls, backend)
+	}
+
+	if len(urls) == 0 {
+		return nil
 	}
 	return urls
 }

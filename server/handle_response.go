@@ -9,21 +9,21 @@ import (
 	"path/filepath"
 )
 
-func SendHTTPErrorResponse(res http.ResponseWriter, status int) {
+func SendHTTPErrorResponse(response http.ResponseWriter, status int) {
 	msg := "gohttp: " + http.StatusText(status)
-	res.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	res.WriteHeader(status)
-	io.WriteString(res, msg)
+	response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	response.WriteHeader(status)
+	io.WriteString(response, msg)
 }
 
-func SendStaticFile(res http.ResponseWriter, req *http.Request, path string) {
+func SendStaticFile(response http.ResponseWriter, request *http.Request, path string) {
 	handleError := func(err error) {
 		if errors.Is(err, os.ErrNotExist) {
-			SendHTTPErrorResponse(res, http.StatusNotFound)
+			SendHTTPErrorResponse(response, http.StatusNotFound)
 		} else if os.IsPermission(err) {
-			SendHTTPErrorResponse(res, http.StatusForbidden)
+			SendHTTPErrorResponse(response, http.StatusForbidden)
 		} else {
-			SendHTTPErrorResponse(res, http.StatusInternalServerError)
+			SendHTTPErrorResponse(response, http.StatusInternalServerError)
 		}
 	}
 
@@ -43,5 +43,5 @@ func SendStaticFile(res http.ResponseWriter, req *http.Request, path string) {
 		path = indexPath
 	}
 
-	http.ServeFile(res, req, path)
+	http.ServeFile(response, request, path)
 }
