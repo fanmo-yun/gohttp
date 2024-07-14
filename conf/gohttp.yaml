@@ -1,0 +1,30 @@
+server:
+  host: 127.0.0.1
+  port: 3000
+
+html:
+  path: html
+  index: index.html
+
+logger:
+  type: stdout, file
+  level: info
+
+# custom:
+#   - url: /aaa
+#     file: /cargo/cargo.html
+
+#   - url: /bbb
+#     file: /cargo/cargo.html
+  
+#   - url: /ccc
+#     file: /cargo
+
+# proxy:
+#   - prefix: /api
+#     target: http://127.0.0.1:3333
+
+# backend:
+#   - url: 127.0.0.1:4444
+#   - url: 127.0.0.1:4445
+#   - url: 127.0.0.1:4446
