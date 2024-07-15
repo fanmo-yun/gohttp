@@ -2,14 +2,16 @@ package server
 
 import (
 	"fmt"
+	"gohttp/logger"
 	"gohttp/utils"
-	"log"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 func ServerRun() {
 	config := utils.LoadConfig()
-	fmt.Println(config)
+	logger.NewLogger(config.Logger)
 
 	address := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
 	gohttp := http.Server{
@@ -17,9 +19,9 @@ func ServerRun() {
 		Handler: HandleRouter(config),
 	}
 
-	log.Println("Listening on http://" + address)
+	zap.L().Info("gohttp: Server running on" + address)
 	err := gohttp.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		zap.L().Sugar().Fatalf("gohttp: Listen And Serve Fatal: %v", err)
 	}
 }
