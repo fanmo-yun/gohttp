@@ -1,4 +1,5 @@
 /html
 /build
+/log
 /.vscode
 go.sum

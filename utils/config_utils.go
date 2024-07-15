@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -82,6 +82,16 @@ func CoverConfig(c *Config) {
 		}
 	}
 
+	if reflect.DeepEqual(c.Logger, LoggerConfig{}) {
+		c.Logger = *DefaultLogger()
+	} else {
+		if c.Logger.Out == "" {
+			c.Logger.Out = "console"
+		} else if c.Logger.Level == "" {
+			c.Logger.Level = "info"
+		}
+	}
+
 	if reflect.DeepEqual(c.Static, HtmlConfig{}) {
 		c.Static = *DefaultHtml()
 	} else {
@@ -96,19 +106,10 @@ func CoverConfig(c *Config) {
 				if len(s) > 1 {
 					c.Static.Index = s[1]
 				} else {
-					panic("配置错误: 'Index' 字段格式错误，缺少文件名")
+					fmt.Fprintf(os.Stdout, "gohttp: Config Cannot Init\n")
+					os.Exit(1001)
 				}
 			}
-		}
-	}
-
-	if reflect.DeepEqual(c.Logger, LoggerConfig{}) {
-		c.Logger = *DefaultLogger()
-	} else {
-		if c.Logger.Out == "" {
-			c.Logger.Out = "stdout"
-		} else if c.Logger.Level == "" {
-			c.Logger.Level = "info"
 		}
 	}
 }
@@ -118,10 +119,12 @@ func LoadConfig() *Config {
 	configPath := filepath.Join("conf", "gohttp.yaml")
 	confData, readErr := os.ReadFile(configPath)
 	if readErr != nil {
-		log.Fatalln(readErr)
+		fmt.Fprintf(os.Stdout, "gohttp: Config Cannot Init\n")
+		os.Exit(1001)
 	}
 	if unmarshalErr := yaml.Unmarshal(confData, &config); unmarshalErr != nil {
-		log.Fatalln(unmarshalErr)
+		fmt.Fprintf(os.Stdout, "gohttp: Config Cannot Unmarshal\n")
+		os.Exit(1001)
 	}
 	CoverConfig(&config)
 	return &config

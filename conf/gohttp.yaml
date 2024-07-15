@@ -7,7 +7,7 @@ html:
   index: try index.html
 
 logger:
-  out: file
+  out: console
   level: info
 
 # custom:

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+
+	"go.uber.org/zap"
 )
 
 func Handle(response http.ResponseWriter, request *http.Request) *url.URL {
@@ -33,26 +35,33 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 	loadBalancer := NewLoadBalancer(backends)
 
 	return func(response http.ResponseWriter, request *http.Request) {
+		zap.L().Info("Request received", zap.String("method", request.Method), zap.String("url", request.URL.String()))
+
 		urlPath := Handle(response, request)
 		if urlPath == nil {
+			zap.L().Warn("Invalid URL path")
 			return
 		}
 		path := urlPath.Path
 
 		if proxies != nil && FindAndServeProxy(response, request, path, proxies) {
+			zap.L().Info("Handled by proxy", zap.String("path", path))
 			return
 		}
 
 		if backends != nil {
 			loadBalancer.ServeHTTP(response, request)
+			zap.L().Info("Handled by load balancer", zap.String("path", path))
 			return
 		}
 
 		if !config.Static.Try {
 			if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom) {
+				zap.L().Info("Handled by static router", zap.String("path", path))
 				Router(response, request, path, config.Static)
 			}
 		} else {
+			zap.L().Info("Handled by try router", zap.String("path", path))
 			TryRootRouter(response, request, path, config.Static)
 		}
 	}
@@ -63,6 +72,7 @@ func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath s
 		return false
 	}
 
+	zap.L().Info("Handled by custom router", zap.String("path", URLPath))
 	for _, custom := range cus {
 		if custom.Urlpath == URLPath {
 			fullPath := filepath.Join(staticDir, filepath.Clean(custom.Filepath))
@@ -82,6 +92,7 @@ func Router(response http.ResponseWriter, request *http.Request, URLPath string,
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
 		SendStaticFile(response, request, fullPath)
 	}
+	zap.L().Info("Serving static file", zap.String("path", URLPath))
 }
 
 func TryRootRouter(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig) {
@@ -93,4 +104,5 @@ func TryRootRouter(response http.ResponseWriter, request *http.Request, URLPath 
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
 		SendTryRootFile(response, request, fullPath, h)
 	}
+	zap.L().Info("Serving try static file", zap.String("path", URLPath))
 }

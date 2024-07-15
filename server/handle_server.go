@@ -19,9 +19,9 @@ func ServerRun() {
 		Handler: HandleRouter(config),
 	}
 
-	zap.L().Info("gohttp: Server running on" + address)
+	zap.L().Info("Server Running", zap.String("http", address))
 	err := gohttp.ListenAndServe()
 	if err != nil {
-		zap.L().Sugar().Fatalf("gohttp: Listen And Serve Fatal: %v", err)
+		zap.L().Fatal("Listen And Serve Fatal", zap.Error(err))
 	}
 }
