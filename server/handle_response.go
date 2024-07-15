@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -49,6 +50,11 @@ func SendStaticFile(response http.ResponseWriter, request *http.Request, path st
 		path = indexPath
 	}
 
+	if strings.HasSuffix(path, ".ico") {
+		response.Header().Set("Content-Type", "image/x-icon")
+		http.ServeFile(response, request, path)
+		return
+	}
 	http.ServeFile(response, request, path)
 }
 
@@ -74,5 +80,10 @@ func SendTryRootFile(response http.ResponseWriter, request *http.Request, path s
 		return
 	}
 
+	if strings.HasSuffix(path, ".ico") {
+		response.Header().Set("Content-Type", "image/x-icon")
+		http.ServeFile(response, request, path)
+		return
+	}
 	http.ServeFile(response, request, path)
 }
