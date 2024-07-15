@@ -1,7 +1,11 @@
 package main
 
-import "gohttp/server"
+import (
+	"gohttp/banner"
+	"gohttp/server"
+)
 
 func main() {
+	banner.ShowBanner()
 	server.ServerRun()
 }
