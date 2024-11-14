@@ -1,6 +1,6 @@
 server:
   host: 127.0.0.1
-  port: 3000
+  port: 7865
 
 html:
   path: html
@@ -12,13 +12,13 @@ logger:
 
 # custom:
 #   - url: /aaa
-#     file: /cargo/cargo.html
+#     file: /a/aaa.html
 
 #   - url: /bbb
-#     file: /cargo/cargo.html
+#     file: /b/bbb.html
   
 #   - url: /ccc
-#     file: /cargo
+#     file: /cccd
 
 # proxy:
 #   - prefix: /api
