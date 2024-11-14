@@ -2,4 +2,5 @@
 /build
 /log
 /.vscode
+/default.etcd
 go.sum
