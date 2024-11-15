@@ -14,6 +14,7 @@ type Config struct {
 	Server  ServerConfig    `yaml:"server,omitempty"`
 	Static  HtmlConfig      `yaml:"html,omitempty"`
 	Logger  LoggerConfig    `yaml:"logger,omitempty"`
+	Gzip    bool            `yaml:"gzip,omitempty"`
 	Custom  []CustomConfig  `yaml:"custom,omitempty"`
 	Proxy   []ProxyConfig   `yaml:"proxy,omitempty"`
 	Backend []BackendConfig `yaml:"backend,omitempty"`
@@ -116,7 +117,7 @@ func CoverConfig(c *Config) {
 
 func LoadConfig() *Config {
 	var config Config
-	configPath := filepath.Join("conf", "gohttp.yaml")
+	configPath := filepath.Join("conf", "gohttpd.yaml")
 	confData, readErr := os.ReadFile(configPath)
 	if readErr != nil {
 		fmt.Fprintf(os.Stdout, "gohttp: Config Cannot Init\n")
@@ -127,5 +128,6 @@ func LoadConfig() *Config {
 		os.Exit(1001)
 	}
 	CoverConfig(&config)
+	fmt.Println(config)
 	return &config
 }

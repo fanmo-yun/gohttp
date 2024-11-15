@@ -1,6 +1,7 @@
 package server
 
 import (
+	"compress/gzip"
 	"errors"
 	"gohttp/utils"
 	"io"
@@ -18,6 +19,24 @@ func SendHTTPErrorResponse(response http.ResponseWriter, status int) {
 	response.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	response.WriteHeader(status)
 	io.WriteString(response, msg)
+}
+
+func SendGzipFile(response http.ResponseWriter, request *http.Request, path string) {
+	if strings.Contains(request.Header.Get("Accept-Encoding"), "gzip") {
+		gz := gzip.NewWriter(response)
+		defer gz.Close()
+
+		response.Header().Set("Content-Encoding", "gzip")
+
+		gzipResponseWriter := &GzipResponseWriter{
+			ResponseWriter: response,
+			Writer:         gz,
+		}
+
+		http.ServeFile(gzipResponseWriter, request, path)
+	} else {
+		http.ServeFile(response, request, path)
+	}
 }
 
 func SendStaticFile(response http.ResponseWriter, request *http.Request, path string) {
@@ -50,12 +69,7 @@ func SendStaticFile(response http.ResponseWriter, request *http.Request, path st
 		path = indexPath
 	}
 
-	if strings.HasSuffix(path, ".ico") {
-		response.Header().Set("Content-Type", "image/x-icon")
-		http.ServeFile(response, request, path)
-		return
-	}
-	http.ServeFile(response, request, path)
+	SendGzipFile(response, request, path)
 }
 
 func SendTryRootFile(response http.ResponseWriter, request *http.Request, path string, h utils.HtmlConfig) {
@@ -80,10 +94,5 @@ func SendTryRootFile(response http.ResponseWriter, request *http.Request, path s
 		return
 	}
 
-	if strings.HasSuffix(path, ".ico") {
-		response.Header().Set("Content-Type", "image/x-icon")
-		http.ServeFile(response, request, path)
-		return
-	}
-	http.ServeFile(response, request, path)
+	SendGzipFile(response, request, path)
 }
