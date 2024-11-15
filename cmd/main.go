@@ -2,7 +2,7 @@ package main
 
 import (
 	"gohttp/banner"
-	"gohttp/server"
+	server "gohttp/internal"
 )
 
 func main() {
