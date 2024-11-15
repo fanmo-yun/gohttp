@@ -56,18 +56,18 @@ func HandleRouter(config *utils.Config) http.HandlerFunc {
 		}
 
 		if !config.Static.Try {
-			if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom) {
+			if !CustomRouter(response, request, path, config.Static.Dirpath, config.Custom, config.Gzip) {
 				zap.L().Info("Handled by static router", zap.String("path", path))
-				Router(response, request, path, config.Static)
+				Router(response, request, path, config.Static, config.Gzip)
 			}
 		} else {
 			zap.L().Info("Handled by try router", zap.String("path", path))
-			TryRootRouter(response, request, path, config.Static)
+			TryRootRouter(response, request, path, config.Static, config.Gzip)
 		}
 	}
 }
 
-func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig) bool {
+func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath string, staticDir string, cus []utils.CustomConfig, gzt bool) bool {
 	if len(cus) == 0 {
 		return false
 	}
@@ -76,33 +76,33 @@ func CustomRouter(response http.ResponseWriter, request *http.Request, URLPath s
 	for _, custom := range cus {
 		if custom.Urlpath == URLPath {
 			fullPath := filepath.Join(staticDir, filepath.Clean(custom.Filepath))
-			SendStaticFile(response, request, fullPath)
+			SendStaticFile(response, request, fullPath, gzt)
 			return true
 		}
 	}
 	return false
 }
 
-func Router(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig) {
+func Router(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig, gzt bool) {
 	switch URLPath {
 	case "/":
 		fullPath := filepath.Join(h.Dirpath, h.Index)
-		SendStaticFile(response, request, fullPath)
+		SendStaticFile(response, request, fullPath, gzt)
 	default:
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
-		SendStaticFile(response, request, fullPath)
+		SendStaticFile(response, request, fullPath, gzt)
 	}
 	zap.L().Info("Serving static file", zap.String("path", URLPath))
 }
 
-func TryRootRouter(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig) {
+func TryRootRouter(response http.ResponseWriter, request *http.Request, URLPath string, h utils.HtmlConfig, gzt bool) {
 	switch URLPath {
 	case "/":
 		fullPath := filepath.Join(h.Dirpath, h.Index)
-		SendTryRootFile(response, request, fullPath, h)
+		SendTryRootFile(response, request, fullPath, h, gzt)
 	default:
 		fullPath := filepath.Join(h.Dirpath, filepath.Clean(URLPath))
-		SendTryRootFile(response, request, fullPath, h)
+		SendTryRootFile(response, request, fullPath, h, gzt)
 	}
 	zap.L().Info("Serving try static file", zap.String("path", URLPath))
 }

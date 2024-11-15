@@ -21,8 +21,8 @@ func SendHTTPErrorResponse(response http.ResponseWriter, status int) {
 	io.WriteString(response, msg)
 }
 
-func SendGzipFile(response http.ResponseWriter, request *http.Request, path string) {
-	if strings.Contains(request.Header.Get("Accept-Encoding"), "gzip") {
+func SendGzipOrFile(response http.ResponseWriter, request *http.Request, path string, gzipTransport bool) {
+	if strings.Contains(request.Header.Get("Accept-Encoding"), "gzip") && gzipTransport {
 		gz := gzip.NewWriter(response)
 		defer gz.Close()
 
@@ -39,7 +39,7 @@ func SendGzipFile(response http.ResponseWriter, request *http.Request, path stri
 	}
 }
 
-func SendStaticFile(response http.ResponseWriter, request *http.Request, path string) {
+func SendStaticFile(response http.ResponseWriter, request *http.Request, path string, gzipTransport bool) {
 	handleError := func(err error) {
 		if errors.Is(err, os.ErrNotExist) {
 			zap.L().Warn("File not found", zap.String("path", path))
@@ -69,10 +69,10 @@ func SendStaticFile(response http.ResponseWriter, request *http.Request, path st
 		path = indexPath
 	}
 
-	SendGzipFile(response, request, path)
+	SendGzipOrFile(response, request, path, gzipTransport)
 }
 
-func SendTryRootFile(response http.ResponseWriter, request *http.Request, path string, h utils.HtmlConfig) {
+func SendTryRootFile(response http.ResponseWriter, request *http.Request, path string, h utils.HtmlConfig, gzipTransport bool) {
 	zap.L().Info("Serving file with try-root strategy", zap.String("path", path), zap.String("request_url", request.URL.String()), zap.String("dirpath", h.Dirpath), zap.String("index", h.Index))
 	handleError := func(err error) {
 		if errors.Is(err, os.ErrNotExist) {
@@ -94,5 +94,5 @@ func SendTryRootFile(response http.ResponseWriter, request *http.Request, path s
 		return
 	}
 
-	SendGzipFile(response, request, path)
+	SendGzipOrFile(response, request, path, gzipTransport)
 }

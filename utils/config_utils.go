@@ -128,6 +128,5 @@ func LoadConfig() *Config {
 		os.Exit(1001)
 	}
 	CoverConfig(&config)
-	fmt.Println(config)
 	return &config
 }

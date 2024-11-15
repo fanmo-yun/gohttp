@@ -10,7 +10,7 @@ logger:
   out: console
   level: info
 
-gzip: 
+gzip: false
 
 # custom:
 #   - url: /aaa
