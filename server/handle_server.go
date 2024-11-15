@@ -39,7 +39,7 @@ func ShutdownServer(s *http.Server) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
-	zap.L().Info("Server is shutting down...")
+	zap.L().Warn("Server is shutting down...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -48,5 +48,5 @@ func ShutdownServer(s *http.Server) {
 		zap.L().Fatal("Server forced to shutdown", zap.Error(err))
 	}
 
-	zap.L().Info("Server exiting")
+	zap.L().Warn("Server exiting")
 }

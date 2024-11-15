@@ -1,6 +1,6 @@
 server:
   host: 127.0.0.1
-  port: 7863
+  port: 7850
 
 html:
   path: html/html1
@@ -10,7 +10,7 @@ logger:
   out: console
   level: info
 
-gzip: false
+gzip: true
 
 # custom:
 #   - url: /aaa
