@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	"gohttp/logger"
-	"gohttp/utils"
+	"gohttpd/logger"
+	"gohttpd/utils"
 	"net/http"
 	"os"
 	"os/signal"

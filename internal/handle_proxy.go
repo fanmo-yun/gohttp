@@ -1,7 +1,7 @@
 package server
 
 import (
-	"gohttp/utils"
+	"gohttpd/utils"
 	"net/http"
 	"net/http/httputil"
 	"net/url"

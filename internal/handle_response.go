@@ -3,7 +3,7 @@ package server
 import (
 	"compress/gzip"
 	"errors"
-	"gohttp/utils"
+	"gohttpd/utils"
 	"io"
 	"net/http"
 	"os"

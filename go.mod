@@ -1,4 +1,4 @@
-module gohttp
+module gohttpd
 
 go 1.23.3
 

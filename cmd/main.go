@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gohttp/banner"
-	server "gohttp/internal"
+	"gohttpd/banner"
+	server "gohttpd/internal"
 )
 
 func main() {

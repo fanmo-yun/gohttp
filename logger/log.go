@@ -2,7 +2,7 @@ package logger
 
 import (
 	"fmt"
-	"gohttp/utils"
+	"gohttpd/utils"
 	"os"
 	"path/filepath"
 	"time"
